@@ -31,11 +31,6 @@ def display_choice_list
   end
 end
 
-valid_choices_shorthand = []
-VALID_CHOICES.each do |key, _|
-  valid_choices_shorthand << key.to_s
-end
-
 def get_input_from_player(bound_list)
   player_input = ''
   loop do
@@ -78,6 +73,11 @@ def display_final_result(player_score, computer_score)
     prompt("Computer win #{computer_score} to #{player_score}".center(60))
   end
   prompt("--------------------".center(60))
+end
+
+valid_choices_shorthand = []
+VALID_CHOICES.each do |key, _|
+  valid_choices_shorthand << key.to_s
 end
 
 player_score = 0
