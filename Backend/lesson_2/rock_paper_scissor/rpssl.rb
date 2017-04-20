@@ -1,76 +1,100 @@
-require 'yaml'
+require "yaml"
 
 MESSAGES = YAML.load_file('rpssl_messages.yml')
 
-VALID_CHOICE = %w(rock lizard spock scissors paper)
+VALID_CHOICES = {
+  "r" => "rock",
+  "p" => "paper",
+  "sc" => "scissors",
+  "sp" => "spock",
+  "l" => "lizard"
+}
 
-choice_list = %w(r l sp sc p)
+WIN_CONDITIONS = {
+  "rock" => ["lizard", "scissors"],
+  "paper" => ["rock", "spock"],
+  "scissors" => ["paper", "lizard"],
+  "spock" => ["scissors", "rock"],
+  "lizard" => ["spock", "paper"]
+}
 
-choice_list_prompt = <<-msg
-  Please choose one:
-  r: rock
-  p: paper
-  sc: scissors
-  sp: spock
-  l: lizard
-msg
+GAME_SCORE = 5
 
 def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
-def win?(choice1, choice2)
-  i1 = VALID_CHOICE.index(choice1)
-  i2 = VALID_CHOICE.index(choice2)
-  base = VALID_CHOICE.length
-
-  (i1 + 1) % base == i2 || (i1 + 3) % base == i2
+def display_choice_list
+  prompt("Please choose one: ")
+  VALID_CHOICES.each do |key, value|
+    prompt("#{key} for #{value}")
+  end
 end
 
-def display_result(player, computer)
+def get_input_from_player(bound_list)
+  player_input = ''
+  loop do
+    display_choice_list
+    player_input = Kernel.gets().chomp()
+    if bound_list.include?(player_input)
+      break
+    else
+      prompt(MESSAGES["wrong_input"])
+    end
+  end
+  player_input
+end
+
+def win?(winner, loser)
+  WIN_CONDITIONS[winner].include?(loser)
+end
+
+def display_immediate_result(player, computer)
   if win?(player, computer)
     prompt(MESSAGES["you_scored"])
   elsif win?(computer, player)
     prompt(MESSAGES["computer_scored"])
   else
-    prompt("Tie!")
+    prompt(MESSAGES["tie"])
   end
+end
+
+def display_update_result(player_score, computer_score)
+  Kernel.puts("\n")
+  prompt("#{player_score} for you and #{computer_score} for computer".rjust(60))
+  Kernel.puts("\n")
+end
+
+def display_final_result(player_score, computer_score)
+  prompt("--------------------".center(60))
+  if player_score > computer_score
+    prompt("You win #{player_score} to #{computer_score}".upcase.center(60))
+  else
+    prompt("Computer win #{computer_score} to #{player_score}".center(60))
+  end
+  prompt("--------------------".center(60))
+end
+
+valid_choices_shorthand = []
+VALID_CHOICES.each do |key, _|
+  valid_choices_shorthand << key.to_s
 end
 
 player_score = 0
 computer_score = 0
 leading_score = 0
 
-while leading_score < 5
-  player_choice_abb = ''
-  loop do
-    prompt(choice_list_prompt)
-    player_choice_abb = Kernel.gets().chomp()
-    if choice_list.include?(player_choice_abb)
-      break
-    else
-      prompt(MESSAGES["wrong_choice"])
-    end
-  end
+while leading_score < GAME_SCORE
 
-  player_choice = case player_choice_abb
-                  when "r"
-                    "rock"
-                  when "p"
-                    "paper"
-                  when "sc"
-                    "scissors"
-                  when "sp"
-                    "spock"
-                  when "l"
-                    "lizard"
-                  end
+  player_choice_shorthand = get_input_from_player(valid_choices_shorthand)
+  player_choice = VALID_CHOICES[player_choice_shorthand]
 
-  computer_choice = VALID_CHOICE.sample()
+  computer_choice_shorthand = valid_choices_shorthand.sample()
+  computer_choice = VALID_CHOICES[computer_choice_shorthand]
 
   prompt("You chose #{player_choice}, computer chose #{computer_choice}")
 
-  display_result(player_choice, computer_choice)
+  display_immediate_result(player_choice, computer_choice)
 
   if win?(player_choice, computer_choice)
     player_score += 1
@@ -78,20 +102,12 @@ while leading_score < 5
     computer_score += 1
   end
 
-  puts("\n")
-  prompt("#{player_score} for you, #{computer_score} for computer".rjust(60))
-  puts("\n")
+  display_update_result(player_score, computer_score)
 
-  leading_score = [player_score, computer_score].max
+  leading_score = [player_score, computer_score].max()
 
 end
 
-puts("\n")
-if player_score > computer_score
-  prompt("You won #{player_score} to #{computer_score}".upcase.center(60))
-else
-  prompt("Computer won #{computer_score} to #{player_score}".upcase.center(60))
-end
-puts("\n")
+display_final_result(player_score, computer_score)
 
 prompt(MESSAGES["bye"])
