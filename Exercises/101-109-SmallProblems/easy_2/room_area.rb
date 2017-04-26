@@ -9,20 +9,10 @@ SQMETERS_TO_SQFEET = CONVERSION["feet"] ** 2
 SQFEET_TO_INCHES = (CONVERSION["inches"] / CONVERSION["feet"]) ** 2
 SQFEET_TO_CENTIMETERS = (CONVERSION["centimeters"] / CONVERSION["feet"]) ** 2
 
-def get_unit
-  unit = nil
-  loop do
-    puts "Enter the unit to calculate: "
-    unit = gets().chomp()
-    break if CONVERSION.keys.include?(unit)
-  end
-  unit
-end
-
-def get_length(unit)
+def get_length
   length = nil
   loop do
-    puts "Enter the length of the room in #{unit}: "
+    puts "Enter the length of the room in feet: "
     length = gets().chomp()
     if /^\d+\.?\d*$/.match(length)
       break
@@ -33,10 +23,10 @@ def get_length(unit)
   length
 end
 
-def get_width(unit)
+def get_width
   width = nil
   loop do
-    puts "Enter the width of the room in #{unit}: "
+    puts "Enter the width of the room in feet: "
     width = gets().chomp()
     if /^\d+\.?\d*$/.match(width)
       break
@@ -47,9 +37,8 @@ def get_width(unit)
   width
 end
 
-unit = get_unit
-length = get_length(unit).to_f
-width = get_width(unit).to_f
+length = get_length.to_f
+width = get_width.to_f
 area_in_feet = length * width
 area_in_inches = area_in_feet * SQFEET_TO_INCHES
 area_in_centimeters = area_in_feet * SQFEET_TO_CENTIMETERS
