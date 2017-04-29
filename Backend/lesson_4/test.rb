@@ -1,13 +1,7 @@
-def multiply(numbers, multiplier)
-  count = 0
-  multiply_numbers = []
-  loop do
-    break if count == numbers.size
-    multiply_numbers << (numbers[count] *= multiplier).round(4)
-    count += 1
-  end
-  multiply_numbers
-end
+# flintstones = ["Fred", "Barney", "Wilma", "Betty", "Pebbles", "BamBam"]
+# hsh = Hash.new()
+# flintstones.each_with_index do |name, index|
+#   hsh[name] = index
+# end
+# puts hsh
 
-my_numbers = [1, 4, 3, 7, 2, 6]
-p multiply(my_numbers, 312.768) # => [3, 12, 9, 21, 6, 18]
