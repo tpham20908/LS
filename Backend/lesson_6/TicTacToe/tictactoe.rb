@@ -92,24 +92,43 @@ def board_full?(brd)
 end
 
 loop do
-  board = initialize_board
+  player_score = 0
+  computer_score = 0
+  game_score = 0
 
   loop do
+    board = initialize_board
+
+    loop do
+      display_board(board)
+
+      prompt "Player: #{player_score}, Computer: #{computer_score}"
+
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+
+      computer_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+    end
+
     display_board(board)
 
-    player_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+    if someone_won?(board)
+      # prompt "#{detect_winner(board)} won!"
+      player_score += 1 if detect_winner(board).downcase == 'player'
+      computer_score += 1 if detect_winner(board).downcase == 'computer'
+      game_score = [player_score, computer_score].max
+    else
+      prompt "It's a tie!"
+    end
 
-    computer_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+    break if game_score == 5
   end
 
-  display_board(board)
-
-  if someone_won?(board)
-    prompt "#{detect_winner(board)} won!"
+  if player_score == game_score
+    prompt "Player win the game: #{player_score} to #{computer_score}"
   else
-    prompt "It's a tie!"
+    prompt "Computer win the game #{computer_score} to #{player_score}"
   end
 
   prompt "Play again? (y or n)"
