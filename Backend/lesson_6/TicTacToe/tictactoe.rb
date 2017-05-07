@@ -105,6 +105,14 @@ def board_full?(brd)
   empty_square(brd).empty?
 end
 
+def display_winner(player_score, computer_score, game_score)
+  if player_score == game_score
+    prompt "Player win the game: #{player_score} to #{computer_score}"
+  else
+    prompt "Computer win the game #{computer_score} to #{player_score}"
+  end
+end
+
 loop do
   player_score = 0
   computer_score = 0
@@ -138,11 +146,7 @@ loop do
     break if game_score == 5
   end
 
-  if player_score == game_score
-    prompt "Player win the game: #{player_score} to #{computer_score}"
-  else
-    prompt "Computer win the game #{computer_score} to #{player_score}"
-  end
+  display_winner(player_score, computer_score, game_score)
 
   prompt "Play again? (y or n)"
   answer = gets.chomp
