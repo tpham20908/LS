@@ -4,6 +4,12 @@ INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
 
+WINNING_LINES = [
+  [1, 2, 3], [4, 5, 6], [7, 8, 9],   # row
+  [1, 4, 7], [2, 5, 8], [3, 6, 9],   # colunm
+  [1, 5, 9], [3, 5, 7]               # diagonal
+]
+
 def prompt(msg)
   puts "=> #{msg}"
 end
@@ -48,6 +54,17 @@ def joinor(arr, str1 = ', ', str2 = 'or')
   end
 end
 
+def finishing_squares(brd, marker)
+  placed_squares = brd.keys.select { |num| brd[num] == marker }
+  offence_arr = WINNING_LINES.select { |arr| (arr - placed_squares).size == 1 }
+  finishing_squares = offence_arr.map { |arr| arr - placed_squares }.flatten
+  finishing_squares.select { |square| brd[square] == INITIAL_MARKER }
+end
+
+def advantage_5(brd)
+  5 if empty_square(brd).include?(5)
+end
+
 def player_places_piece!(brd)
   square = ''
   loop do
@@ -61,7 +78,10 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = empty_square(brd).sample
+  square = (finishing_squares(brd, COMPUTER_MARKER).sample ||
+            finishing_squares(brd, PLAYER_MARKER).sample ||
+            advantage_5(brd)||
+            empty_square(brd).sample)
 
   brd[square] = COMPUTER_MARKER
 end
@@ -71,13 +91,7 @@ def someone_won?(brd)
 end
 
 def detect_winner(brd)
-  winning_lines = [
-    [1, 2, 3], [4, 5, 6], [7, 8, 9],   # row
-    [1, 4, 7], [2, 5, 8], [3, 6, 9],   # colunm
-    [1, 5, 9], [3, 5, 7]               # diagonal
-  ]
-
-  winning_lines.each do |line|
+  WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
       return "Player"
     elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
@@ -114,7 +128,6 @@ loop do
     display_board(board)
 
     if someone_won?(board)
-      # prompt "#{detect_winner(board)} won!"
       player_score += 1 if detect_winner(board).downcase == 'player'
       computer_score += 1 if detect_winner(board).downcase == 'computer'
       game_score = [player_score, computer_score].max
