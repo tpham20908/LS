@@ -3,6 +3,7 @@ require 'pry'
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
+NUM_OF_PLAYER = 2
 
 WINNING_LINES = [
   [1, 2, 3], [4, 5, 6], [7, 8, 9],   # row
@@ -80,7 +81,7 @@ end
 def computer_places_piece!(brd)
   square = (finishing_squares(brd, COMPUTER_MARKER).sample ||
             finishing_squares(brd, PLAYER_MARKER).sample ||
-            advantage_5(brd)||
+            advantage_5(brd) ||
             empty_square(brd).sample)
 
   brd[square] = COMPUTER_MARKER
@@ -113,23 +114,43 @@ def display_winner(player_score, computer_score, game_score)
   end
 end
 
+def alternate_player(player)
+  (player + 1) % NUM_OF_PLAYER
+end
+
+def place_piece!(brd, player)
+  case player
+  when 0 then player_places_piece!(brd)
+  when 1 then computer_places_piece!(brd)
+  end
+end
+
+def choose_player
+  player = ''
+  loop do
+    prompt "Who moves first? 0: Player or 1: Computer"
+    player = gets.chomp.to_i
+    break if (0..NUM_OF_PLAYER).to_a.include?(player)
+    prompt "It's not a valid player!"
+  end
+  player
+end
+
 loop do
   player_score = 0
   computer_score = 0
   game_score = 0
+  current_player = choose_player
 
   loop do
     board = initialize_board
+    display_board(board)
 
     loop do
       display_board(board)
-
       prompt "Player: #{player_score}, Computer: #{computer_score}"
-
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-
-      computer_places_piece!(board)
+      place_piece!(board, current_player)
+      current_player = alternate_player(current_player)
       break if someone_won?(board) || board_full?(board)
     end
 
