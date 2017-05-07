@@ -137,12 +137,12 @@ loop do
 
     if someone_won?(board)
       prompt "#{detect_winner(board)} won!"
+      player_score += 1 if detect_winner(board).downcase == 'player'
+      computer_score += 1 if detect_winner(board).downcase == 'computer'
     else
       prompt "It's a tie!"
     end
 
-    player_score += 1 if detect_winner(board).downcase == 'player'
-    computer_score += 1 if detect_winner(board).downcase == 'computer'
     game_score = [player_score, computer_score].max
 
     break if game_score == 5
