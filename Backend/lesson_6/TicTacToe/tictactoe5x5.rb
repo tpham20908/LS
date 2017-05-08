@@ -29,9 +29,13 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
+def clear_screen
+  system('clear') || system('cls')
+end
+
 # rubocop: disable Metrics/AbcSize, Metrics/LineLength
 def display_board(brd)
-  system "cls"
+  clear_screen
   puts ""
   puts "     |     |     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}  |  #{brd[4]}  |  #{brd[5]}"
@@ -58,12 +62,17 @@ end
 
 def initialize_board
   hsh = Hash.new
-  (1..25).each { |number| hsh[number] = ' ' }
+  (1..25).each { |number| hsh[number] = INITIAL_MARKER }
   hsh
 end
 
 def empty_square(brd)
-  brd.keys.select { |number| brd[number] == ' ' }
+  brd.keys.select { |number| brd[number] == INITIAL_MARKER }
+end
+
+def squares_take_first(brd)
+  advantage_squares = [7, 8, 9, 12, 13, 14, 17, 18, 19]
+  advantage_squares.select { |square| empty_square(brd).include?(square) }
 end
 
 def joinor(arr, str1 = ', ', str2 = 'or')
@@ -77,11 +86,19 @@ def joinor(arr, str1 = ', ', str2 = 'or')
   end
 end
 
-def finishing_squares(brd, marker)
-  placed_squares = brd.keys.select { |num| brd[num] == marker }
-  offence_arr = WINNING_LINES.select { |arr| (arr - placed_squares).size == 1 }
-  finishing_squares = offence_arr.map { |arr| arr - placed_squares }.flatten
-  finishing_squares.select { |square| brd[square] == INITIAL_MARKER }
+def placed_squares(brd, marker)
+  brd.keys.select { |num| brd[num] == marker }
+end
+
+def winning_possible_lines(squares_taken)
+  WINNING_LINES.select { |line| (line - squares_taken).size == 1 }
+end
+
+def threat_squares(brd, marker)
+  squares_taken = placed_squares(brd, marker)
+  pay_attention_lines = winning_possible_lines(squares_taken)
+  scoring_squares = pay_attention_lines.map { |line| line - squares_taken }
+  scoring_squares.flatten.select { |square| brd[square] == INITIAL_MARKER }
 end
 
 def player_places_piece!(brd)
@@ -97,18 +114,20 @@ def player_places_piece!(brd)
 end
 
 def computer1_places_piece!(brd)
-  square = (finishing_squares(brd, COMPUTER1_MARKER).sample ||
-            finishing_squares(brd, COMPUTER2_MARKER).sample ||
-            finishing_squares(brd, PLAYER_MARKER).sample ||
+  square = (threat_squares(brd, COMPUTER1_MARKER).sample ||
+            threat_squares(brd, COMPUTER2_MARKER).sample ||
+            threat_squares(brd, PLAYER_MARKER).sample ||
+            squares_take_first(brd).sample ||
             empty_square(brd).sample)
 
   brd[square] = COMPUTER1_MARKER
 end
 
 def computer2_places_piece!(brd)
-  square = (finishing_squares(brd, COMPUTER2_MARKER).sample ||
-            finishing_squares(brd, PLAYER_MARKER).sample ||
-            finishing_squares(brd, COMPUTER1_MARKER).sample ||
+  square = (threat_squares(brd, COMPUTER2_MARKER).sample ||
+            threat_squares(brd, PLAYER_MARKER).sample ||
+            threat_squares(brd, COMPUTER1_MARKER).sample ||
+            squares_take_first(brd).sample ||
             empty_square(brd).sample)
 
   brd[square] = COMPUTER2_MARKER
@@ -160,15 +179,30 @@ def place_piece!(brd, player)
   end
 end
 
-def choose_player
+def choose_player_going_first
   player = ''
   loop do
-    prompt "Who moves first? 0: Player, 1: Computer1 or 2: Computer2"
-    player = gets.chomp.to_i
-    break if (0..NUM_OF_PLAYER).to_a.include?(player)
+    prompt "Who moves first? p: Player or c1: Computer1 or c2: Computer2"
+    player = gets.chomp
+    break if ['p', 'c1', 'c2'].include?(player)
     prompt "It's not a valid player!"
   end
-  player
+  case player
+  when 'p' then 0
+  when 'c1' then 1
+  when 'c2' then 2
+  end
+end
+
+def play_again
+  answer = ''
+  loop do
+    prompt "Play again? (y or n)"
+    answer = gets.chomp
+    break if answer.downcase.start_with?('y', 'n')
+    prompt "Don't understand!"
+  end
+  answer == 'y' ? true : false
 end
 
 loop do
@@ -176,7 +210,7 @@ loop do
   computer1_score = 0
   computer2_score = 0
   game_score = 0
-  current_player = choose_player
+  current_player = choose_player_going_first
 
   loop do
     board = initialize_board
@@ -194,10 +228,11 @@ loop do
     display_board(board)
 
     if someone_won?(board)
-      prompt "#{detect_winner(board)} won!"
-      player_score += 1 if detect_winner(board).downcase == 'player'
-      computer1_score += 1 if detect_winner(board).downcase == 'computer1'
-      computer2_score += 1 if detect_winner(board).downcase == 'computer2'
+      temp_winner = detect_winner(board)
+      prompt "#{temp_winner} won!"
+      player_score += 1 if temp_winner.downcase == 'player'
+      computer1_score += 1 if temp_winner.downcase == 'computer1'
+      computer2_score += 1 if temp_winner.downcase == 'computer2'
     else
       prompt "It's a tie!"
     end
@@ -209,9 +244,7 @@ loop do
 
   display_winner(player_score, computer1_score, computer2_score, game_score)
 
-  prompt "Play again? (y or n)"
-  answer = gets.chomp
-  break unless answer.downcase.start_with?('y')
+  break unless play_again
 end
 
 prompt "Thanks for playing Tic-Tac-Toe. Good bye!"

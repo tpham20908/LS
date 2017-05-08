@@ -72,10 +72,6 @@ def threat_squares(brd, marker)
   pay_attention_lines = winning_possible_lines(squares_taken)
   scoring_squares = pay_attention_lines.map { |line| line - squares_taken }
   scoring_squares.flatten.select { |square| brd[square] == INITIAL_MARKER }
-
-  # offence_arr = WINNING_LINES.select { |arr| (arr - placed_squares).size == 1 }
-  # finishing_squares = offence_arr.map { |arr| arr - placed_squares }.flatten
-  # finishing_squares.select { |square| brd[square] == INITIAL_MARKER }
 end
 
 def advantage_5(brd)
@@ -141,7 +137,7 @@ def place_piece!(brd, player)
   end
 end
 
-def choose_player
+def choose_player_going_first
   player = ''
   loop do
     prompt "Who moves first? p: Player or c: Computer"
@@ -167,7 +163,7 @@ loop do
   player_score = 0
   computer_score = 0
   game_score = 0
-  current_player = choose_player
+  current_player = choose_player_going_first
 
   loop do
     board = initialize_board
