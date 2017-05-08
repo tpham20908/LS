@@ -15,9 +15,13 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
+def clear_screen
+  system('clear') || system('cls')
+end
+
 # rubocop: disable Metrics/AbcSize
 def display_board(brd)
-  system "cls"
+  clear_screen
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}  "
@@ -55,11 +59,23 @@ def joinor(arr, str1 = ', ', str2 = 'or')
   end
 end
 
-def finishing_squares(brd, marker)
-  placed_squares = brd.keys.select { |num| brd[num] == marker }
-  offence_arr = WINNING_LINES.select { |arr| (arr - placed_squares).size == 1 }
-  finishing_squares = offence_arr.map { |arr| arr - placed_squares }.flatten
-  finishing_squares.select { |square| brd[square] == INITIAL_MARKER }
+def placed_squares(brd, marker)
+  brd.keys.select { |num| brd[num] == marker }
+end
+
+def winning_possible_lines(squares_taken)
+  WINNING_LINES.select { |line| (line - squares_taken).size == 1 }
+end
+
+def threat_squares(brd, marker)
+  squares_taken = placed_squares(brd, marker)
+  pay_attention_lines = winning_possible_lines(squares_taken)
+  scoring_squares = pay_attention_lines.map { |line| line - squares_taken }
+  scoring_squares.flatten.select { |square| brd[square] == INITIAL_MARKER }
+
+  # offence_arr = WINNING_LINES.select { |arr| (arr - placed_squares).size == 1 }
+  # finishing_squares = offence_arr.map { |arr| arr - placed_squares }.flatten
+  # finishing_squares.select { |square| brd[square] == INITIAL_MARKER }
 end
 
 def advantage_5(brd)
@@ -79,8 +95,8 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = (finishing_squares(brd, COMPUTER_MARKER).sample ||
-            finishing_squares(brd, PLAYER_MARKER).sample ||
+  square = (threat_squares(brd, COMPUTER_MARKER).sample ||
+            threat_squares(brd, PLAYER_MARKER).sample ||
             advantage_5(brd) ||
             empty_square(brd).sample)
 
@@ -108,9 +124,9 @@ end
 
 def display_winner(player_score, computer_score, game_score)
   if player_score == game_score
-    prompt "Player win the game: #{player_score} to #{computer_score}"
+    prompt "Player won the game: #{player_score} to #{computer_score}"
   else
-    prompt "Computer win the game #{computer_score} to #{player_score}"
+    prompt "Computer won the game #{computer_score} to #{player_score}"
   end
 end
 
@@ -128,12 +144,23 @@ end
 def choose_player
   player = ''
   loop do
-    prompt "Who moves first? 0: Player or 1: Computer"
-    player = gets.chomp.to_i
-    break if (0..NUM_OF_PLAYER).to_a.include?(player)
+    prompt "Who moves first? p: Player or c: Computer"
+    player = gets.chomp
+    break if %w(p c).include?(player)
     prompt "It's not a valid player!"
   end
-  player
+  player == 'p' ? 0 : 1
+end
+
+def play_again
+  answer = ''
+  loop do
+    prompt "Play again? (y or n)"
+    answer = gets.chomp
+    break if answer.downcase.start_with?('y', 'n')
+    prompt "Don't understand!"
+  end
+  answer == 'y' ? true : false
 end
 
 loop do
@@ -144,7 +171,6 @@ loop do
 
   loop do
     board = initialize_board
-    display_board(board)
 
     loop do
       display_board(board)
@@ -157,9 +183,10 @@ loop do
     display_board(board)
 
     if someone_won?(board)
-      prompt "#{detect_winner(board)} won!"
-      player_score += 1 if detect_winner(board).downcase == 'player'
-      computer_score += 1 if detect_winner(board).downcase == 'computer'
+      temp_winner = detect_winner(board)
+      prompt "#{temp_winner} won!"
+      player_score += 1 if temp_winner.downcase == 'player'
+      computer_score += 1 if temp_winner.downcase == 'computer'
     else
       prompt "It's a tie!"
     end
@@ -170,10 +197,8 @@ loop do
   end
 
   display_winner(player_score, computer_score, game_score)
+  break unless play_again
 
-  prompt "Play again? (y or n)"
-  answer = gets.chomp
-  break unless answer.downcase.start_with?('y')
 end
 
 prompt "Thanks for playing Tic-Tac-Toe. Good bye!"
