@@ -141,8 +141,8 @@ def choose_player_going_first
   player = ''
   loop do
     prompt "Who moves first? p: Player or c: Computer"
-    player = gets.chomp
-    break if %w(p c).include?(player)
+    player = gets.chomp.downcase
+    break if ['p', 'c'].include?(player)
     prompt "It's not a valid player!"
   end
   player == 'p' ? 0 : 1
@@ -156,7 +156,20 @@ def play_again
     break if answer.downcase.start_with?('y', 'n')
     prompt "Don't understand!"
   end
-  answer == 'y' ? true : false
+  answer == 'y'
+end
+
+def display_round_winner(player)
+  loop do
+    if player
+      prompt "#{player} won!"
+    else
+      prompt "It's a tie!"
+    end
+    prompt "Press \[any key\] Enter to continue."
+    key_pressed = gets
+    break if /.*/.match(key_pressed)
+  end
 end
 
 loop do
@@ -179,22 +192,21 @@ loop do
     display_board(board)
 
     if someone_won?(board)
-      temp_winner = detect_winner(board)
-      prompt "#{temp_winner} won!"
-      player_score += 1 if temp_winner.downcase == 'player'
-      computer_score += 1 if temp_winner.downcase == 'computer'
+      round_winner = detect_winner(board)
+      display_round_winner(round_winner)
+      player_score += 1 if round_winner.downcase == 'player'
+      computer_score += 1 if round_winner.downcase == 'computer'
     else
-      prompt "It's a tie!"
+      display_round_winner(nil)
     end
 
     game_score = [player_score, computer_score].max
 
-    break if game_score == 5
+    break if game_score == 2
   end
 
   display_winner(player_score, computer_score, game_score)
   break unless play_again
-
 end
 
 prompt "Thanks for playing Tic-Tac-Toe. Good bye!"
