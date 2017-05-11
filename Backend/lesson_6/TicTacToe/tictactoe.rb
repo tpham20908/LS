@@ -155,7 +155,7 @@ def play_again
   answer = ''
   loop do
     prompt "Play again? (y or n)"
-    answer = gets.chomp
+    answer = gets.chomp.downcase
     break if answer.downcase.start_with?('y', 'n')
     prompt "Don't understand!"
   end
