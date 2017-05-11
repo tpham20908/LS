@@ -59,19 +59,22 @@ def joinor(arr, str1 = ', ', str2 = 'or')
   end
 end
 
-def placed_squares(brd, marker)
-  brd.keys.select { |num| brd[num] == marker }
+def count_marker_in(brd, line, marker)
+  brd.values_at(*line).count(marker)
 end
 
-def winning_possible_lines(squares_taken)
-  WINNING_LINES.select { |line| (line - squares_taken).size == 1 }
+def empty_square_in(brd, line)
+  line.select { |marker| brd[marker] == INITIAL_MARKER }.first
 end
 
 def threat_squares(brd, marker)
-  squares_taken = placed_squares(brd, marker)
-  pay_attention_lines = winning_possible_lines(squares_taken)
-  scoring_squares = pay_attention_lines.map { |line| line - squares_taken }
-  scoring_squares.flatten.select { |square| brd[square] == INITIAL_MARKER }
+  WINNING_LINES.each do |line|
+    if count_marker_in(brd, line, INITIAL_MARKER) == 1 &&
+       count_marker_in(brd, line, marker) == 2
+      return empty_square_in(brd, line)
+    end
+  end
+  nil
 end
 
 def advantage_5(brd)
@@ -91,8 +94,8 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = (threat_squares(brd, COMPUTER_MARKER).sample ||
-            threat_squares(brd, PLAYER_MARKER).sample ||
+  square = (threat_squares(brd, COMPUTER_MARKER) ||
+            threat_squares(brd, PLAYER_MARKER) ||
             advantage_5(brd) ||
             empty_square(brd).sample)
 
@@ -202,7 +205,7 @@ loop do
 
     game_score = [player_score, computer_score].max
 
-    break if game_score == 2
+    break if game_score == 5
   end
 
   display_winner(player_score, computer_score, game_score)
