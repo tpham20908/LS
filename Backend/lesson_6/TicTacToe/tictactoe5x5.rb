@@ -198,11 +198,11 @@ def play_again
   answer = ''
   loop do
     prompt "Play again? (y or n)"
-    answer = gets.chomp
-    break if answer.downcase.start_with?('y', 'n')
+    answer = gets.chomp.downcase
+    break if answer.start_with?('y', 'n')
     prompt "Don't understand!"
   end
-  answer.downcase == 'y'
+  answer == 'y'
 end
 
 def display_round_winner(player)
