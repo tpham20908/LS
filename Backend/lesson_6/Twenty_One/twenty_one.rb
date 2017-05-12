@@ -2,6 +2,8 @@ require 'pry'
 
 SUITS = ['H', 'D', 'S', 'C']
 VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+MAX_POINT = 21
+SATISFIED_POINT = MAX_POINT - 4
 
 def clear_screen
   system('clear') || system('cls')
@@ -30,14 +32,14 @@ def total(cards)
   end
 
   values.select { |value| value == 'A' }.count.times do
-    sum -= 10 if sum > 21
+    sum -= 10 if sum > MAX_POINT
   end
 
   sum
 end
 
 def busted?(total_value)
-  total_value > 21
+  total_value > MAX_POINT
 end
 
 # rubocop: disable Metrics/MethodLength
@@ -45,9 +47,9 @@ def detect_result(player_cards, dealer_cards)
   player_total = total(player_cards)
   dealer_total = total(dealer_cards)
 
-  if player_total > 21
+  if player_total > MAX_POINT
     :player_busted
-  elsif dealer_total > 21
+  elsif dealer_total > MAX_POINT
     :dealer_busted
   else
     case player_total <=> dealer_total
@@ -174,7 +176,7 @@ loop do
     prompt "Dealer turn..."
 
     loop do
-      break if total(dealer_cards) >= 17
+      break if total(dealer_cards) >= SATISFIED_POINT
       prompt "Dealer hits!"
       dealer_cards << desk.pop
       dealer_total = total(dealer_cards)
