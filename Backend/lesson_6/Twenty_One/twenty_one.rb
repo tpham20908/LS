@@ -1,5 +1,3 @@
-require 'pry'
-
 SUITS = ['H', 'D', 'S', 'C']
 VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 MAX_POINT = 21
@@ -31,7 +29,7 @@ def total(cards)
            end
   end
 
-  values.select { |value| value == 'A' }.count.times do
+  values.count { |value| value == 'A' }.times do
     sum -= 10 if sum > MAX_POINT
   end
 
@@ -79,9 +77,9 @@ def display_result(player_cards, dealer_cards)
       prompt "It's a tie!"
     end
 
-    prompt "Press [key] Enter to continue."
+    prompt "Press Enter to continue."
     key_pressed = gets
-    break if /.*/.match(key_pressed)
+    break if key_pressed
   end
 end
 # rubocop: enable Metrics/MethodLength
@@ -129,13 +127,13 @@ loop do
     prompt "Welcome to Twenty-One!"
     puts "--------------------"
     display_round_result(player_score, dealer_score)
-    desk = initialize_deck
+    deck = initialize_deck
     player_cards = []
     dealer_cards = []
 
     2.times do
-      player_cards << desk.pop
-      dealer_cards << desk.pop
+      player_cards << deck.pop
+      dealer_cards << deck.pop
     end
 
     player_total = total(player_cards)
@@ -156,7 +154,7 @@ loop do
       end
 
       if player_turn == 'h'
-        player_cards << desk.pop
+        player_cards << deck.pop
         player_total = total(player_cards)
         prompt "You now have #{player_cards} for a total of #{player_total}"
       end
@@ -178,7 +176,7 @@ loop do
     loop do
       break if total(dealer_cards) >= SATISFIED_POINT
       prompt "Dealer hits!"
-      dealer_cards << desk.pop
+      dealer_cards << deck.pop
       dealer_total = total(dealer_cards)
       prompt "Dealer cards are now #{dealer_cards}."
     end
