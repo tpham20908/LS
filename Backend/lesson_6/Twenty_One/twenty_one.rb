@@ -63,24 +63,21 @@ end
 
 def display_result(player_cards, dealer_cards)
   result = detect_result(player_cards, dealer_cards)
-  loop do
-    case result
-    when :player_busted
-      prompt "You busted! Dealer won!"
-    when :dealer_busted
-      prompt "Dealer busted! You won!"
-    when :player
-      prompt "You won!"
-    when :dealer
-      prompt "Dealer won!"
-    else
-      prompt "It's a tie!"
-    end
-
-    prompt "Press Enter to continue."
-    key_pressed = gets
-    break if key_pressed
+  case result
+  when :player_busted
+    prompt "You busted! Dealer won!"
+  when :dealer_busted
+    prompt "Dealer busted! You won!"
+  when :player
+    prompt "You won!"
+  when :dealer
+    prompt "Dealer won!"
+  else
+    prompt "It's a tie!"
   end
+
+  prompt "Press Enter to continue."
+  gets
 end
 # rubocop: enable Metrics/MethodLength
 
